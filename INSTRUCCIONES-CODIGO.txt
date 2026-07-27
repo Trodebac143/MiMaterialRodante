@@ -1,0 +1,43 @@
+MI MATERIAL RODANTE · V2.1
+================================
+
+Contenido
+---------
+Este ZIP contiene el código fuente completo de la aplicación publicada,
+incluido el escudo AVAF y los archivos necesarios para instalar dependencias,
+probarla y generar una versión de producción.
+
+Importante sobre los datos
+--------------------------
+Las locomotoras, vagones, composiciones y fotografías de cada usuario NO están
+incluidos en este ZIP. Se guardan localmente en el navegador de cada dispositivo.
+
+Para conservar o trasladar esos datos:
+1. Abrir la aplicación en el dispositivo que contiene la colección.
+2. Pulsar «Exportar».
+3. Guardar el archivo JSON descargado en un lugar seguro.
+4. En el nuevo dispositivo, abrir la aplicación y pulsar «Importar».
+5. Revisar el aviso y confirmar la importación.
+
+Estructura principal
+--------------------
+- app/: interfaz y funcionamiento de la aplicación.
+- public/: imágenes y recursos, incluido el escudo AVAF.
+- package.json y package-lock.json: dependencias del proyecto.
+- .openai/hosting.json: identificación y configuración del sitio en Sites.
+
+Uso técnico
+-----------
+Requiere Node.js y npm.
+
+1. Descomprimir el ZIP.
+2. Abrir una terminal en la carpeta.
+3. Ejecutar: npm install
+4. Para desarrollo: npm run dev
+5. Para comprobar la versión de producción: npm run build
+
+Aplicación publicada
+--------------------
+https://deposito-avaf.vicentefy.chatgpt.site
+
+Fecha de la copia: 27 de julio de 2026
