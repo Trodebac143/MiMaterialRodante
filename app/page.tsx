@@ -178,7 +178,7 @@ export default function Home() {
 
   return <main>
     <header className="topbar"><div className="bar-inner">
-      <a className="brand" href="#" aria-label="Inicio"><img className="brand-shield" src="/escudo-avaf.png?v=2.1" alt="Escudo de la Asociación Valenciana de Amigos del Ferrocarril"/><span><strong>MI MATERIAL</strong><small>RODANTE</small></span></a>
+      <a className="brand" href="#" aria-label="Inicio"><img className="brand-shield" src="escudo-avaf.png?v=2.1" alt="Escudo de la Asociación Valenciana de Amigos del Ferrocarril"/><span><strong>MI MATERIAL</strong><small>RODANTE</small></span></a>
       <button className="share" type="button" onClick={share}><Icon name="share"/><span>Compartir</span></button>
     </div></header>
     <section className="hero"><div className="hero-inner"><p className="eyebrow">COLECCIÓN FERROVIARIA</p><h1>Mi material rodante</h1><div className="hero-train"><i/><Icon name="train"/><i/></div></div></section>
@@ -200,7 +200,7 @@ export default function Home() {
         <input ref={importInput} hidden type="file" accept="application/json,.json" onChange={importData}/>
       </div>
     </section>
-    <footer className="app-footer"><div className="footer-inner"><p>Creada por <strong>V. Fluixá (Socio 482 AVAF).</strong><span>Versión {APP_VERSION} · Julio 2026</span></p><img className="footer-shield" src="/escudo-avaf.png?v=2.1" alt="Escudo AVAF"/></div></footer>
+    <footer className="app-footer"><div className="footer-inner"><p>Creada por <strong>V. Fluixá (Socio 482 AVAF).</strong><span>Versión {APP_VERSION} · Julio 2026</span></p><img className="footer-shield" src="escudo-avaf.png?v=2.1" alt="Escudo AVAF"/></div></footer>
     {toast&&<div className="toast" role="status">{toast}</div>}
   </main>;
 }
