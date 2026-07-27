@@ -1,8 +1,31 @@
-# vinext-starter
+# Mi material rodante
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Aplicación web para registrar locomotoras, vagones y composiciones ferroviarias.
+Los datos y fotografías se guardan únicamente en el almacenamiento local del
+navegador de cada dispositivo.
+
+## Publicación
+
+El proyecto mantiene dos publicaciones independientes:
+
+- La publicación original en OpenAI Sites.
+- GitHub Pages en `https://trodebac143.github.io/MiMaterialRodante/`.
+
+Cada cambio incorporado a la rama `main` de GitHub activa automáticamente el
+flujo `.github/workflows/deploy-pages.yml`. La compilación específica para
+GitHub Pages se genera con:
+
+```bash
+npm run build:github-pages
+```
+
+El resultado se escribe en `dist-github-pages/`. La compilación habitual de
+Sites no cambia y continúa ejecutándose con `npm run build`.
+
+## Arquitectura
+
+El proyecto utiliza [vinext](https://github.com/cloudflare/vinext), con soporte
+opcional para Cloudflare D1 y Drizzle.
 
 ## Prerequisites
 
