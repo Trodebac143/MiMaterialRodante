@@ -30,6 +30,15 @@ abierta para edición, muestra el aviso y espera a que se guarde o cierre.
 La publicación de Sites tiene su propio repositorio y despliegue: un push a
 GitHub Pages no actualiza automáticamente la copia de Sites.
 
+## Copias de seguridad
+
+El acceso «Importar / exportar datos» de la cabecera abre «Gestión de datos».
+La exportación crea un archivo JSON con locomotoras, vagones, composiciones y
+las fotografías guardadas en las fichas. La importación comprueba el formato
+antes de pedir confirmación y sustituye toda la colección local por el
+contenido de la copia, también cuando se importa una copia antigua que solo
+contiene locomotoras.
+
 ## Arquitectura
 
 El proyecto utiliza [vinext](https://github.com/cloudflare/vinext), con soporte
