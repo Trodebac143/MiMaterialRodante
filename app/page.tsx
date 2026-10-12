@@ -38,7 +38,7 @@ type CompositionForm = Omit<Composition, "id" | "createdAt">;
 const LOCO_KEY = "deposito-avaf-v1";
 const WAGON_KEY = "deposito-avaf-wagons-v2";
 const COMPOSITION_KEY = "deposito-avaf-compositions-v2";
-const APP_VERSION = "2.3";
+const APP_VERSION = "2.3.1";
 const APP_DATE = "Octubre 2026";
 
 const BLANK_LOCO: LocoForm = {
@@ -73,11 +73,12 @@ const OPTIONS = {
   wagonRunning:["Listo para circular","Necesita revisión","Fuera de servicio","En reparación"],
 };
 
-function Icon({ name }: { name: "train"|"plus"|"search"|"edit"|"trash"|"close"|"camera"|"check"|"download"|"upload"|"transfer"|"chevron"|"copy"|"left"|"right" }) {
+function Icon({ name }: { name: "train"|"plus"|"search"|"edit"|"trash"|"close"|"camera"|"check"|"download"|"upload"|"transfer"|"database"|"chevron"|"copy"|"left"|"right" }) {
   const paths = {
     train:<><path d="M7 3.5h10a3 3 0 0 1 3 3V17H4V6.5a3 3 0 0 1 3-3Z"/><path d="M7 7h10v6H7zM7 17l-3 4M17 17l3 4M8 20h8"/><circle cx="8" cy="17" r="1.3"/><circle cx="16" cy="17" r="1.3"/></>,
     plus:<path d="M12 5v14M5 12h14"/>, search:<><circle cx="10.5" cy="10.5" r="6.5"/><path d="m19 19-4-4"/></>,
     transfer:<><path d="M7 16V4m0 0L3.5 7.5M7 4l3.5 3.5M17 8v12m0 0 3.5-3.5M17 20l-3.5-3.5"/></>,
+    database:<><ellipse cx="12" cy="5" rx="7" ry="3"/><path d="M5 5v14c0 1.7 3.1 3 7 3s7-1.3 7-3V5M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/></>,
     edit:<path d="m14 5 5 5M5 19l1-4L16 5a2 2 0 0 1 3 3L9 18z"/>,
     trash:<><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></>,
     close:<path d="m6 6 12 12M18 6 6 18"/>, camera:<><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.2"/></>,
@@ -232,7 +233,7 @@ export default function Home() {
   return <main>
     <header className="topbar"><div className="bar-inner">
       <a className="brand" href="#" aria-label="Volver a la colección" onClick={(event)=>{event.preventDefault();closeData()}}><img className="brand-shield" src="escudo-avaf.png" alt="Escudo de la Asociación Valenciana de Amigos del Ferrocarril"/><span><strong>MI MATERIAL RODANTE</strong><small>COLECCIÓN FERROVIARIA</small></span></a>
-      <button className="data-access" type="button" onClick={openData} aria-current={tab==="data"?"page":undefined}><Icon name="transfer"/><span>Importar / exportar datos</span></button>
+      <div className="header-actions"><span className="train-mark" aria-hidden="true"><i/><Icon name="train"/><i/></span><button className="data-access" type="button" onClick={openData} aria-current={tab==="data"?"page":undefined}><Icon name="database"/><span>Gestión de datos</span></button></div>
     </div></header>
     {tab!=="data"&&<nav className="main-tabs" aria-label="Secciones principales">
       {([["motor","Material motor"],["wagons","Vagones"],["compositions","Composiciones"]] as [CollectionTab,string][]).map(([key,label])=>

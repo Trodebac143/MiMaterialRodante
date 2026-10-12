@@ -102,8 +102,10 @@ svg{stroke:currentColor;stroke-width:1.8}.sr-only{position:absolute;width:1px;he
 main{min-height:100dvh;display:flex;flex-direction:column}
 .topbar{height:calc(70px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top)}
 .bar-inner{gap:18px}.brand{min-width:0}.brand strong{white-space:nowrap}.brand small{letter-spacing:.2em}
-.data-access{min-height:44px;max-width:190px;padding:6px 10px;border:1px solid rgba(211,177,106,.55);border-radius:8px;background:transparent;color:#f4dfae;display:flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:750;line-height:1.2;text-align:left}
-.data-access:hover,.data-access[aria-current="page"]{background:rgba(255,255,255,.1)}.data-access svg{width:20px;height:20px;flex:none}
+.header-actions{display:flex;align-items:center;gap:16px;flex:none}
+.data-access{min-height:34px;padding:5px 8px;border:1px solid rgba(255,255,255,.18);border-radius:6px;background:rgba(255,255,255,.05);color:#f1eee6;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:650;line-height:1.1;white-space:nowrap}
+.data-access:hover,.data-access[aria-current="page"]{background:rgba(255,255,255,.12)}.data-access svg{width:15px;height:15px;flex:none;color:#d8b772}
+.train-mark{width:112px;height:58px;display:flex;align-items:center;justify-content:center;gap:8px;color:#bba05b;flex:none}.train-mark svg{width:45px;height:45px;stroke-width:1.3;flex:none}.train-mark i{width:20px;height:1px;background:currentColor;display:block}
 .main-tabs{margin-top:22px}.content{margin-top:24px;z-index:auto;padding-bottom:42px}.tab-content{margin-top:30px}
 .app-footer{position:static;inset:auto;z-index:auto;min-height:70px;margin-top:auto;padding:15px 24px calc(15px + env(safe-area-inset-bottom));border-top:2px solid var(--gold);background:var(--green);color:#e7f0eb;box-shadow:none;backdrop-filter:none}
 .app-footer strong{color:white}.app-footer span{color:#e6c584}.footer-shield{width:48px;height:48px;flex-basis:48px}
@@ -120,7 +122,7 @@ main{min-height:100dvh;display:flex;flex-direction:column}
 @media(max-width:620px){
   .topbar{height:calc(72px + env(safe-area-inset-top))}
   .bar-inner{gap:6px;padding:0 12px}.brand{gap:7px}.brand strong{font-size:clamp(13px,3.8vw,17px)}.brand small{font-size:8px;letter-spacing:.12em}
-  .brand-shield{width:36px;height:36px;flex-basis:36px}.data-access{max-width:120px;min-height:48px;padding:5px;font-size:10px;gap:4px}.data-access svg{width:16px;height:16px}
+  .brand-shield{width:36px;height:36px;flex-basis:36px}.header-actions{gap:6px}.data-access{min-height:32px;padding:4px 6px;font-size:10px;gap:4px}.data-access svg{width:14px;height:14px}.train-mark{width:59px;height:54px;gap:3px}.train-mark svg{width:37px;height:37px}.train-mark i{width:7px}
   .main-tabs{margin-top:15px}.content,.tab-content{margin-top:22px;padding-bottom:36px}.data-content{width:calc(100% - 28px)}
   .data-intro{margin:20px 0 24px}.data-intro>p:last-child{font-size:13px}.data-cards{grid-template-columns:1fr}.data-card{min-height:0;padding:20px}.data-card .primary{width:100%}
   .app-footer{padding:13px 12px calc(13px + env(safe-area-inset-bottom))}.footer-inner{gap:9px}.footer-inner p{font-size:10px;letter-spacing:0}.footer-inner p span{font-size:9px;margin-top:3px}.footer-shield{width:43px;height:43px;flex-basis:43px}
@@ -129,6 +131,6 @@ main{min-height:100dvh;display:flex;flex-direction:column}
   .composition-overlay{padding:0}.composition-sheet{width:100%;height:100dvh;max-height:none;margin:0;border-radius:0}
   .purchase-grid{grid-template-columns:1fr 1fr;gap:10px}.purchase-grid .field>span{font-size:11px}.purchase-grid .check-card>span{min-height:73px}.purchase-grid .purchase-full{grid-column:1/-1}
 }
-@media(max-width:480px){
-  .topbar{height:auto;min-height:calc(100px + env(safe-area-inset-top))}.bar-inner{flex-wrap:wrap;justify-content:flex-end;padding:8px 12px}.brand{width:100%}.data-access{max-width:none;min-height:30px;padding:2px 6px}.data-access span{white-space:nowrap}
+@media(max-width:560px){
+  .topbar{height:calc(106px + env(safe-area-inset-top))}.bar-inner{flex-wrap:wrap;align-content:center;justify-content:flex-end;padding:6px 12px}.brand{width:100%}.header-actions{width:100%;justify-content:flex-end}.data-access{min-height:28px;padding:3px 6px}
 }

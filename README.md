@@ -32,7 +32,7 @@ GitHub Pages no actualiza automáticamente la copia de Sites.
 
 ## Copias de seguridad
 
-El acceso «Importar / exportar datos» de la cabecera abre «Gestión de datos».
+El acceso «Gestión de datos» de la cabecera abre la pantalla de copias de seguridad.
 La exportación crea un archivo JSON con locomotoras, vagones, composiciones y
 las fotografías guardadas en las fichas. La importación comprueba el formato
 antes de pedir confirmación y sustituye toda la colección local por el
