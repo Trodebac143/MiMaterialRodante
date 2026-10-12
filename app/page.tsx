@@ -12,6 +12,8 @@ type Loco = {
   sound: boolean; smoke: boolean; runningState: string; aestheticState: string;
   originalBox: boolean; accessories: boolean; lastMaintenance: string;
   maintenanceState: string; notes: string; photo: string; createdAt: number;
+  purchaseDate: string; purchasePrice: string; purchaseStore: string; secondHand: boolean;
+  weightGrams: string; lengthMm: string;
 };
 type LocoForm = Omit<Loco, "id" | "createdAt">;
 type WagonKind = "Coche de viajeros" | "Vagón de mercancías" | "Furgón" | "Otro";
@@ -20,6 +22,7 @@ type Wagon = {
   manufacturer: string; reference: string; company: string; registration: string;
   scale: string; era: string; administration: string; system: string; coupling: string;
   conservation: string; originalBox: boolean; purchaseDate: string; purchasePrice: string;
+  purchaseStore: string; secondHand: boolean; weightGrams: string; lengthMm: string;
   notes: string; passengerClass: string; family: string; axles: string;
   interiorLighting: boolean; tailLights: boolean; wheelPickup: boolean; livery: string;
   assignedTrain: string; freightCategory: string; railwayCode: string; representedLoad: string;
@@ -34,18 +37,21 @@ type CompositionForm = Omit<Composition, "id" | "createdAt">;
 const LOCO_KEY = "deposito-avaf-v1";
 const WAGON_KEY = "deposito-avaf-wagons-v2";
 const COMPOSITION_KEY = "deposito-avaf-compositions-v2";
-const APP_VERSION = "2.1";
+const APP_VERSION = "2.2";
+const APP_DATE = "Octubre 2026";
 
 const BLANK_LOCO: LocoForm = {
   name:"",manufacturer:"",reference:"",company:"",series:"",locomotiveType:"",scale:"",
   era:"",powerSystem:"",control:"analogica",address:"",decoder:"",importantCvs:[],
   sound:false,smoke:false,runningState:"",aestheticState:"",originalBox:false,accessories:false,
   lastMaintenance:"",maintenanceState:"",notes:"",photo:"",
+  purchaseDate:"",purchasePrice:"",purchaseStore:"",secondHand:false,weightGrams:"",lengthMm:"",
 };
 const BLANK_WAGON: WagonForm = {
   photo:"",name:"",kind:"",manufacturer:"",reference:"",company:"",registration:"",scale:"",
   era:"",administration:"",system:"",coupling:"",conservation:"",originalBox:false,purchaseDate:"",
-  purchasePrice:"",notes:"",passengerClass:"",family:"",axles:"",interiorLighting:false,
+  purchasePrice:"",purchaseStore:"",secondHand:false,weightGrams:"",lengthMm:"",
+  notes:"",passengerClass:"",family:"",axles:"",interiorLighting:false,
   tailLights:false,wheelPickup:false,livery:"",assignedTrain:"",freightCategory:"",
   railwayCode:"",representedLoad:"",loadIncluded:false,removableLoad:false,
   commercialDecoration:"",brakeCabin:false,setName:"",usualComposition:"",quantity:"1",
@@ -127,7 +133,36 @@ export default function Home() {
   const [compositions,setCompositions]=useState<Composition[]>([]);
   const [ready,setReady]=useState(false);
   const [toast,setToast]=useState("");
+  const [availableVersion,setAvailableVersion]=useState("");
   const importInput=useRef<HTMLInputElement>(null);
+
+  useEffect(()=>{
+    let active=true;
+    const checkVersion=async()=>{
+      if(document.visibilityState==="hidden")return;
+      try{
+        const url=new URL("version.json",location.href);
+        url.searchParams.set("check",String(Date.now()));
+        const response=await fetch(url,{cache:"no-store"});
+        if(!response.ok)return;
+        const manifest=await response.json() as {version?:string};
+        const version=manifest.version;
+        if(!active||!version||version.localeCompare(APP_VERSION,undefined,{numeric:true})<=0)return;
+        setAvailableVersion(version);
+        if(document.querySelector(".overlay form")||sessionStorage.getItem("material-rodante-reload")==version)return;
+        sessionStorage.setItem("material-rodante-reload",version);
+        const next=new URL(location.href);
+        next.searchParams.set("app-version",version);
+        location.replace(next.href);
+      }catch{/* La colección sigue disponible sin conexión. */}
+    };
+    void checkVersion();
+    const interval=window.setInterval(()=>void checkVersion(),5*60*1000);
+    const onFocus=()=>void checkVersion();
+    window.addEventListener("focus",onFocus);
+    document.addEventListener("visibilitychange",onFocus);
+    return()=>{active=false;window.clearInterval(interval);window.removeEventListener("focus",onFocus);document.removeEventListener("visibilitychange",onFocus)};
+  },[]);
 
   useEffect(()=>{
     let nextLocos:Loco[]=[];let nextWagons:Wagon[]=[];let nextCompositions:Composition[]=[];let loadError=false;
@@ -178,10 +213,9 @@ export default function Home() {
 
   return <main>
     <header className="topbar"><div className="bar-inner">
-      <a className="brand" href="#" aria-label="Inicio"><img className="brand-shield" src="escudo-avaf.png?v=2.1" alt="Escudo de la Asociación Valenciana de Amigos del Ferrocarril"/><span><strong>MI MATERIAL</strong><small>RODANTE</small></span></a>
-      <button className="share" type="button" onClick={share}><Icon name="share"/><span>Compartir</span></button>
+      <a className="brand" href="#" aria-label="Inicio"><img className="brand-shield" src="escudo-avaf.png" alt="Escudo de la Asociación Valenciana de Amigos del Ferrocarril"/><span><strong>MI MATERIAL RODANTE</strong><small>COLECCIÓN FERROVIARIA</small></span></a>
+      <button className="share train-share" type="button" onClick={share} aria-label="Compartir la aplicación"><i/><Icon name="train"/><i/></button>
     </div></header>
-    <section className="hero"><div className="hero-inner"><p className="eyebrow">COLECCIÓN FERROVIARIA</p><h1>Mi material rodante</h1><div className="hero-train"><i/><Icon name="train"/><i/></div></div></section>
     <nav className="main-tabs" aria-label="Secciones principales">
       {([["motor","Material motor"],["wagons","Vagones"],["compositions","Composiciones"]] as [Tab,string][]).map(([key,label])=>
         <button key={key} className={tab===key?"active":""} type="button" onClick={()=>setTab(key)}>{label}<small>{key==="motor"?locos.length:key==="wagons"?wagons.length:compositions.length}</small></button>
@@ -196,11 +230,12 @@ export default function Home() {
     <section className="global-backup"><p className="privacy"><span>●</span> Tus datos y fotografías se guardan solo en este dispositivo.</p>
       <div className="backup-actions">
         <button type="button" onClick={exportData}><Icon name="upload"/><span><strong>Exportar</strong><small>Locomotoras, vagones y composiciones</small></span></button>
-        <button type="button" onClick={()=>importInput.current?.click()}><Icon name="download"/><span><strong>Importar</strong><small>Copias V2.1 y anteriores</small></span></button>
+        <button type="button" onClick={()=>importInput.current?.click()}><Icon name="download"/><span><strong>Importar</strong><small>Copias V2.2 y anteriores</small></span></button>
         <input ref={importInput} hidden type="file" accept="application/json,.json" onChange={importData}/>
       </div>
     </section>
-    <footer className="app-footer"><div className="footer-inner"><p>Creada por <strong>V. Fluixá (Socio 482 AVAF).</strong><span>Versión {APP_VERSION} · Julio 2026</span></p><img className="footer-shield" src="escudo-avaf.png?v=2.1" alt="Escudo AVAF"/></div></footer>
+    <footer className="app-footer"><div className="footer-inner"><p>Creada por <strong>V. Fluixá (Socio 482 AVAF).</strong><span>Versión {APP_VERSION} · {APP_DATE}</span></p><img className="footer-shield" src="escudo-avaf.png" alt="Escudo AVAF"/></div></footer>
+    {availableVersion&&<div className="update-notice" role="status"><span>Versión {availableVersion} disponible. Guarda la ficha antes de actualizar.</span><button type="button" onClick={()=>{if(document.querySelector(".overlay form")){setToast("Guarda o cierra la ficha primero");return}sessionStorage.removeItem("material-rodante-reload");const next=new URL(location.href);next.searchParams.set("app-version",availableVersion);location.replace(next.href)}}>Actualizar</button></div>}
     {toast&&<div className="toast" role="status">{toast}</div>}
   </main>;
 }
@@ -211,14 +246,22 @@ function MotorTab({locos,setLocos,compositions,setToast}:{locos:Loco[];setLocos:
   const [draft,setDraft]=useState(""); const [query,setQuery]=useState("");
   const [editing,setEditing]=useState<Loco|null>(null); const [viewing,setViewing]=useState<Loco|null>(null); const [removing,setRemoving]=useState<Loco|null>(null);
   const [form,setForm]=useState<LocoForm>(BLANK_LOCO); const [cvOpen,setCvOpen]=useState(false);
+  const [nearBackup,setNearBackup]=useState(false);
   const photoInput=useRef<HTMLInputElement>(null);
+  useEffect(()=>{
+    const backup=document.querySelector(".global-backup");
+    if(!backup||!('IntersectionObserver' in window))return;
+    const observer=new IntersectionObserver(([entry])=>setNearBackup(entry.isIntersecting),{rootMargin:"0px 0px 110px 0px"});
+    observer.observe(backup);
+    return()=>observer.disconnect();
+  },[]);
   const visible=useMemo(()=>locos.filter((l)=>control==="todas"||l.control===control).filter((l)=>{
     if(typeFilter==="todos")return true;const t=text(l.locomotiveType);return typeFilter==="automotor"?t.startsWith("automotor"):t===typeFilter;
   }).filter((l)=>!query||text([l.name,l.manufacturer,l.reference,l.company,l.series,l.locomotiveType,l.address].join(" ")).includes(text(query))).sort((a,b)=>b.createdAt-a.createdAt),[locos,control,typeFilter,query]);
   const update=<K extends keyof LocoForm>(key:K,value:LocoForm[K])=>setForm((f)=>({...f,[key]:value}));
   const openNew=()=>{setEditing({} as Loco);setForm(BLANK_LOCO);setCvOpen(false)};
   const openEdit=(l:Loco)=>{const{id:_,createdAt:__,...fields}=l;void _;void __;setViewing(null);setEditing(l);setForm(fields);setCvOpen(false)};
-  const save=(e:FormEvent)=>{e.preventDefault();const clean={...form,name:form.name.trim(),manufacturer:form.manufacturer.trim(),reference:form.reference.trim(),company:form.company.trim(),series:form.series.trim(),address:form.control==="digital"?form.address:"",decoder:form.control==="digital"?form.decoder:"",importantCvs:form.control==="digital"?form.importantCvs:[],sound:form.control==="digital"&&form.sound};
+  const save=(e:FormEvent)=>{e.preventDefault();const clean={...form,name:form.name.trim(),manufacturer:form.manufacturer.trim(),reference:form.reference.trim(),company:form.company.trim(),series:form.series.trim(),purchaseStore:form.secondHand?"":form.purchaseStore.trim(),address:form.control==="digital"?form.address:"",decoder:form.control==="digital"?form.decoder:"",importantCvs:form.control==="digital"?form.importantCvs:[],sound:form.control==="digital"&&form.sound};
     if(editing?.id){setLocos((list)=>list.map((l)=>l.id===editing.id?{...l,...clean}:l));setToast("Ficha actualizada");}else{setLocos((list)=>[...list,{...clean,id:makeId(),createdAt:Date.now()}]);setToast("Locomotora añadida");}setEditing(null);
   };
   const addPhoto=async(e:ChangeEvent<HTMLInputElement>)=>{const file=e.target.files?.[0];if(file)try{update("photo",await shrinkPhoto(file));}catch{setToast("No se pudo preparar la imagen")}};
@@ -231,7 +274,7 @@ function MotorTab({locos,setLocos,compositions,setToast}:{locos:Loco[];setLocos:
     <div className="type-filter-bar"><label>Filtrar por tipo</label><select value={typeFilter} onChange={(e)=>setTypeFilter(e.target.value)}><option value="todos">Todos los tipos</option><option value="vapor">Vapor</option><option value="electrica">Eléctrica</option><option value="diesel">Diésel</option><option value="automotor">Automotor</option><option value="tranvia">Tranvía</option></select></div>
     <div className="section-title"><div><p className="eyebrow dark">{typeFilter==="todos"?"MATERIAL MOTOR":`MATERIAL MOTOR · ${typeLabel[typeFilter]}`}</p><h2>{typeFilter!=="todos"?typeLabel[typeFilter]:control==="todas"?"Todas las locomotoras":control==="digital"?"Locomotoras digitales":"Locomotoras analógicas"}</h2></div><span>{visible.length} unidades</span></div>
     {visible.length?<div className="loco-table"><div className="loco-table-head"><span>Fotografía</span><span>Locomotora</span><span>Dirección digital</span></div>{visible.map((l)=><button className="loco-row" key={l.id} onClick={()=>setViewing(l)}><Photo src={l.photo} alt={l.name}/><span className="loco-name">{l.name}</span><span className="loco-address">{l.control==="digital"?(l.address||"Sin asignar"):"—"}</span></button>)}</div>:<Empty title={locos.length?"No hay coincidencias":"Tu depósito está esperando"} text={locos.length?"Prueba con otros filtros.":"Añade tu primera locomotora."} action={openNew}/>}
-    <button className="fab" onClick={openNew}><Icon name="plus"/></button>
+    <button className={`fab ${nearBackup?"near-backup":""}`} type="button" onClick={openNew} aria-label="Nueva locomotora"><Icon name="plus"/></button>
     {editing&&<div className="overlay" onMouseDown={()=>setEditing(null)}><section className="sheet" onMouseDown={(e)=>e.stopPropagation()}><div className="handle"/><header className="sheet-head"><div><p className="eyebrow dark">{editing.id?"EDITAR MATERIAL":"ALTA DE MATERIAL"}</p><h2>{editing.id?"Editar locomotora":"Nueva locomotora"}</h2></div><button className="icon-btn" onClick={()=>setEditing(null)}><Icon name="close"/></button></header>
       <form onSubmit={save}><PhotoPicker photo={form.photo} inputRef={photoInput} onPhoto={addPhoto} onRemove={()=>update("photo","")}/>
         <fieldset className="form-section"><legend>Datos básicos</legend><div className="two-cols">
@@ -242,11 +285,18 @@ function MotorTab({locos,setLocos,compositions,setToast}:{locos:Loco[];setLocos:
         </div></fieldset>
         <fieldset className="form-section"><legend>Características técnicas</legend><div className="two-cols"><SelectField label="Sistema de alimentación" value={form.powerSystem} options={OPTIONS.powerSystem} onChange={(v)=>update("powerSystem",v)}/><SelectField label="Estado de funcionamiento" value={form.runningState} options={OPTIONS.runningState} onChange={(v)=>update("runningState",v)}/><SelectField label="Estado estético" value={form.aestheticState} options={OPTIONS.aestheticState} onChange={(v)=>update("aestheticState",v)}/></div><div className="check-grid"><Check label="Embalaje original" checked={form.originalBox} onChange={(v)=>update("originalBox",v)}/><Check label="Accesorios" checked={form.accessories} onChange={(v)=>update("accessories",v)}/></div></fieldset>
         <fieldset className="form-section"><legend>Digitalización</legend><div className="control-options">{(["analogica","digital"] as Control[]).map((k)=><label key={k}><input type="radio" checked={form.control===k} onChange={()=>update("control",k)}/><span><i className={`dot ${k}`}/><strong>{k==="digital"?"Digital":"Analógica"}</strong></span></label>)}</div>{form.control==="digital"&&<><div className="two-cols"><Field label="Decodificador" value={form.decoder} onChange={(v)=>update("decoder",v)}/><Field label="Dirección digital" value={form.address} onChange={(v)=>update("address",v.replace(/\D/g,""))}/></div><button className="cv-picker-button" type="button" onClick={()=>setCvOpen(!cvOpen)}><span><strong>CVs importantes</strong><small>{form.importantCvs.length} seleccionadas</small></span><Icon name="chevron"/></button>{cvOpen&&<div className="cv-picker">{Array.from({length:300},(_,i)=>i+1).map((n)=><label key={n}><input type="checkbox" checked={form.importantCvs.some((cv)=>cv.number===n)} onChange={()=>update("importantCvs",form.importantCvs.some((cv)=>cv.number===n)?form.importantCvs.filter((cv)=>cv.number!==n):[...form.importantCvs,{number:n,initial:"",current:""}].sort((a,b)=>a.number-b.number))}/><span>CV{n}</span></label>)}</div>}{form.importantCvs.length>0&&<div className="cv-list"><div className="cv-list-head"><span>CV</span><span>Inicial</span><span>Actual</span><span/></div>{form.importantCvs.map((cv)=><div className="cv-row" key={cv.number}><strong>CV{cv.number}</strong><input value={cv.initial} onChange={(e)=>update("importantCvs",form.importantCvs.map((x)=>x.number===cv.number?{...x,initial:e.target.value.replace(/\D/g,"")}:x))}/><input value={cv.current} onChange={(e)=>update("importantCvs",form.importantCvs.map((x)=>x.number===cv.number?{...x,current:e.target.value.replace(/\D/g,"")}:x))}/><button type="button" onClick={()=>update("importantCvs",form.importantCvs.filter((x)=>x.number!==cv.number))}><Icon name="close"/></button></div>)}</div>}</>}<div className="check-grid"><Check label="Sonido" checked={form.sound} onChange={(v)=>update("sound",v)}/><Check label="Generador de humo" checked={form.smoke} onChange={(v)=>update("smoke",v)}/></div></fieldset>
+        <fieldset className="form-section"><legend>Compra y medidas</legend><div className="two-cols">
+          <Field type="date" label="Fecha de compra" value={form.purchaseDate} onChange={(v)=>update("purchaseDate",v)}/>
+          <Field type="number" label="Precio de compra (€)" value={form.purchasePrice} onChange={(v)=>update("purchasePrice",v)}/>
+          <Field label="Establecimiento" value={form.purchaseStore} disabled={form.secondHand} onChange={(v)=>update("purchaseStore",v)}/>
+          <Field type="number" label="Peso (g)" value={form.weightGrams} onChange={(v)=>update("weightGrams",v)}/>
+          <Field type="number" label="Longitud (mm)" value={form.lengthMm} onChange={(v)=>update("lengthMm",v)}/>
+        </div><Check label="Segunda mano" checked={form.secondHand} onChange={(v)=>setForm((f)=>({...f,secondHand:v,purchaseStore:v?"":f.purchaseStore}))}/></fieldset>
         <fieldset className="form-section"><legend>Mantenimiento</legend><div className="two-cols"><Field type="date" label="Último mantenimiento" value={form.lastMaintenance} onChange={(v)=>update("lastMaintenance",v)}/><SelectField label="Situación de mantenimiento" value={form.maintenanceState} options={OPTIONS.maintenanceState} onChange={(v)=>update("maintenanceState",v)}/></div></fieldset>
         <fieldset className="form-section"><legend>Notas</legend><Area label="Información adicional" value={form.notes} onChange={(v)=>update("notes",v)}/></fieldset>
         <div className="form-actions"><button type="button" onClick={()=>setEditing(null)}>Cancelar</button><button className="save">Guardar</button></div>
       </form></section></div>}
-    {viewing&&<Detail title={viewing.name} photo={viewing.photo} rows={[["Fabricante",viewing.manufacturer],["Referencia",viewing.reference],["Compañía",viewing.company],["Serie o matrícula",viewing.series],["Tipo",viewing.locomotiveType],["Escala",viewing.scale],["Época",viewing.era],["Sistema",viewing.powerSystem],["Control",viewing.control],["Dirección",viewing.address],["Decodificador",viewing.decoder],["Funcionamiento",viewing.runningState],["Estado estético",viewing.aestheticState],["Mantenimiento",viewing.maintenanceState]]} notes={viewing.notes} onClose={()=>setViewing(null)} onEdit={()=>openEdit(viewing)} onDelete={()=>{setViewing(null);setRemoving(viewing)}}/>}
+    {viewing&&<Detail title={viewing.name} photo={viewing.photo} rows={[["Fabricante",viewing.manufacturer],["Referencia",viewing.reference],["Compañía",viewing.company],["Serie o matrícula",viewing.series],["Tipo",viewing.locomotiveType],["Escala",viewing.scale],["Época",viewing.era],["Sistema",viewing.powerSystem],["Control",viewing.control],["Dirección",viewing.address],["Decodificador",viewing.decoder],["Funcionamiento",viewing.runningState],["Estado estético",viewing.aestheticState],["Mantenimiento",viewing.maintenanceState],["Fecha de compra",viewing.purchaseDate],["Precio de compra (€)",viewing.purchasePrice],["Establecimiento",viewing.secondHand?"":viewing.purchaseStore],["Segunda mano",viewing.secondHand?"Sí":"No"],["Peso (g)",viewing.weightGrams],["Longitud (mm)",viewing.lengthMm]]} notes={viewing.notes} onClose={()=>setViewing(null)} onEdit={()=>openEdit(viewing)} onDelete={()=>{setViewing(null);setRemoving(viewing)}}/>}
     {removing&&<DeleteConfirm title="¿Eliminar esta locomotora?" name={removing.name} usages={usedIn(removing.id)} onCancel={()=>setRemoving(null)} onConfirm={deleteNow}/>}
   </section>;
 }
@@ -258,10 +308,10 @@ function WagonsTab({wagons,setWagons,compositions,setToast}:{wagons:Wagon[];setW
   const visible=useMemo(()=>wagons.filter((w)=>Object.entries(filters).every(([key,value])=>!value||text(String(w[key as keyof Wagon]||"")).includes(text(value)))).sort((a,b)=>b.createdAt-a.createdAt),[wagons,filters]);
   const update=<K extends keyof WagonForm>(key:K,value:WagonForm[K])=>setForm((f)=>({...f,[key]:value}));
   const openNew=()=>{setEditing({} as Wagon);setForm(BLANK_WAGON)};const openEdit=(w:Wagon)=>{const{id:_,createdAt:__,...rest}=w;void _;void __;setViewing(null);setEditing(w);setForm(rest)};
-  const save=(e:FormEvent)=>{e.preventDefault();const clean={...form,name:form.name.trim(),reference:form.reference.trim(),company:form.company.trim(),registration:form.registration.trim()};if(editing?.id){setWagons((list)=>list.map((w)=>w.id===editing.id?{...w,...clean}:w));setToast("Ficha actualizada");}else{setWagons((list)=>[...list,{...clean,id:makeId(),createdAt:Date.now()}]);setToast("Vehículo añadido");}setEditing(null)};
+  const save=(e:FormEvent)=>{e.preventDefault();const clean={...form,name:form.name.trim(),reference:form.reference.trim(),company:form.company.trim(),registration:form.registration.trim(),purchaseStore:form.secondHand?"":form.purchaseStore.trim()};if(editing?.id){setWagons((list)=>list.map((w)=>w.id===editing.id?{...w,...clean}:w));setToast("Ficha actualizada");}else{setWagons((list)=>[...list,{...clean,id:makeId(),createdAt:Date.now()}]);setToast("Vehículo añadido");}setEditing(null)};
   const addPhoto=async(e:ChangeEvent<HTMLInputElement>)=>{const file=e.target.files?.[0];if(file)try{update("photo",await shrinkPhoto(file));}catch{setToast("No se pudo preparar la imagen")}};
   const usedIn=(id:string)=>compositions.filter((c)=>c.wagonIds.includes(id)).map((c)=>c.name);
-  const details=(w:Wagon):[string,string][]=>[["Tipo",w.kind],["Fabricante",w.manufacturer],["Referencia",w.reference],["Compañía",w.company],["Matrícula",w.registration],["Escala",w.scale],["Época",w.era],["Administración o país",w.administration],["Sistema",w.system],["Enganche",w.coupling],["Conservación",w.conservation],["Fecha de compra",w.purchaseDate],["Precio",w.purchasePrice],["Clase",w.passengerClass],["Serie o familia",w.family],["Ejes o bogies",w.axles],["Librea",w.livery],["Tren",w.assignedTrain],["Categoría",w.freightCategory],["Código ferroviario",w.railwayCode],["Carga",w.representedLoad],["Decoración comercial",w.commercialDecoration],["Set",w.setName],["Composición habitual",w.usualComposition],["Unidades iguales",w.quantity],["Estado de circulación",w.runningState],["Modificaciones",w.modifications],["Historial de mantenimiento",w.maintenanceHistory]];
+  const details=(w:Wagon):[string,string][]=>[["Tipo",w.kind],["Fabricante",w.manufacturer],["Referencia",w.reference],["Compañía",w.company],["Matrícula",w.registration],["Escala",w.scale],["Época",w.era],["Administración o país",w.administration],["Sistema",w.system],["Enganche",w.coupling],["Conservación",w.conservation],["Fecha de compra",w.purchaseDate],["Precio de compra (€)",w.purchasePrice],["Establecimiento",w.secondHand?"":w.purchaseStore],["Segunda mano",w.secondHand?"Sí":"No"],["Peso (g)",w.weightGrams],["Longitud (mm)",w.lengthMm],["Clase",w.passengerClass],["Serie o familia",w.family],["Ejes o bogies",w.axles],["Librea",w.livery],["Tren",w.assignedTrain],["Categoría",w.freightCategory],["Código ferroviario",w.railwayCode],["Carga",w.representedLoad],["Decoración comercial",w.commercialDecoration],["Set",w.setName],["Composición habitual",w.usualComposition],["Unidades iguales",w.quantity],["Estado de circulación",w.runningState],["Modificaciones",w.modifications],["Historial de mantenimiento",w.maintenanceHistory]];
   return <section className="content tab-content wagons-content">
     <div className="section-title collection-heading"><div><p className="eyebrow dark">COCHES Y VAGONES</p><h2>Vagones</h2></div><button className="primary" onClick={openNew}><Icon name="plus"/> Nuevo vehículo</button></div>
     <div className="filter-panel"><div className="filter-panel-head"><strong>Filtros combinables</strong><button type="button" onClick={()=>setFilters(emptyFilters)}>Limpiar todos</button></div><div className="wagon-filter-grid">{[["name","Nombre o tipo"],["company","Compañía"],["registration","Matrícula"],["reference","Referencia"]].map(([key,label])=><label key={key}><span>{label}</span><input value={filters[key as keyof typeof filters]} onChange={(e)=>setFilters((f)=>({...f,[key]:e.target.value}))} placeholder={`Filtrar ${label.toLowerCase()}`}/></label>)}</div></div>
@@ -270,6 +320,11 @@ function WagonsTab({wagons,setWagons,compositions,setToast}:{wagons:Wagon[];setW
     {editing&&<div className="overlay" onMouseDown={()=>setEditing(null)}><section className="sheet wagon-sheet" onMouseDown={(e)=>e.stopPropagation()}><div className="handle"/><header className="sheet-head"><div><p className="eyebrow dark">GESTIÓN DE VAGONES</p><h2>{editing.id?"Editar vehículo":"Nuevo vehículo"}</h2></div><button className="icon-btn" onClick={()=>setEditing(null)}><Icon name="close"/></button></header><form onSubmit={save}>
       <PhotoPicker photo={form.photo} inputRef={photoInput} onPhoto={addPhoto} onRemove={()=>update("photo","")}/>
       <fieldset className="form-section"><legend>Datos comunes</legend><div className="two-cols"><SelectField required label="Tipo de material" value={form.kind} options={OPTIONS.kind} onChange={(v)=>update("kind",v as WagonKind)}/><Field required label="Nombre personalizado *" value={form.name} onChange={(v)=>update("name",v)}/><Field label="Fabricante" value={form.manufacturer} onChange={(v)=>update("manufacturer",v)}/><Field label="Referencia del fabricante" value={form.reference} onChange={(v)=>update("reference",v)}/><Field label="Compañía ferroviaria" value={form.company} onChange={(v)=>update("company",v)}/><Field label="Matrícula o numeración" value={form.registration} onChange={(v)=>update("registration",v)}/><SelectField label="Escala" value={form.scale} options={OPTIONS.scale} onChange={(v)=>update("scale",v)}/><SelectField label="Época ferroviaria" value={form.era} options={OPTIONS.era} onChange={(v)=>update("era",v)}/><Field label="Administración o país" value={form.administration} onChange={(v)=>update("administration",v)}/><SelectField label="Sistema" value={form.system} options={OPTIONS.system} onChange={(v)=>update("system",v)}/><Field label="Tipo de enganche" value={form.coupling} onChange={(v)=>update("coupling",v)}/><SelectField label="Estado de conservación" value={form.conservation} options={OPTIONS.conservation} onChange={(v)=>update("conservation",v)}/><Field type="date" label="Fecha de compra" value={form.purchaseDate} onChange={(v)=>update("purchaseDate",v)}/><Field type="number" label="Precio de compra (€)" value={form.purchasePrice} onChange={(v)=>update("purchasePrice",v)}/></div><Check label="Embalaje original" checked={form.originalBox} onChange={(v)=>update("originalBox",v)}/></fieldset>
+      <fieldset className="form-section"><legend>Compra y medidas</legend><div className="two-cols">
+        <Field label="Establecimiento" value={form.purchaseStore} disabled={form.secondHand} onChange={(v)=>update("purchaseStore",v)}/>
+        <Field type="number" label="Peso (g)" value={form.weightGrams} onChange={(v)=>update("weightGrams",v)}/>
+        <Field type="number" label="Longitud (mm)" value={form.lengthMm} onChange={(v)=>update("lengthMm",v)}/>
+      </div><Check label="Segunda mano" checked={form.secondHand} onChange={(v)=>setForm((f)=>({...f,secondHand:v,purchaseStore:v?"":f.purchaseStore}))}/></fieldset>
       {form.kind==="Coche de viajeros"&&<fieldset className="form-section dynamic-section"><legend>Coche de viajeros</legend><div className="two-cols"><SelectField label="Clase" value={form.passengerClass} options={OPTIONS.passengerClass} onChange={(v)=>update("passengerClass",v)}/><Field label="Serie o familia" value={form.family} onChange={(v)=>update("family",v)}/><Field label="Número de ejes o tipo de bogie" value={form.axles} onChange={(v)=>update("axles",v)}/><Field label="Decoración o librea" value={form.livery} onChange={(v)=>update("livery",v)}/><Field label="Composición o tren al que pertenece" value={form.assignedTrain} onChange={(v)=>update("assignedTrain",v)}/></div><div className="check-grid"><Check label="Iluminación interior" checked={form.interiorLighting} onChange={(v)=>update("interiorLighting",v)}/><Check label="Luces de cola" checked={form.tailLights} onChange={(v)=>update("tailLights",v)}/><Check label="Toma de corriente por ruedas" checked={form.wheelPickup} onChange={(v)=>update("wheelPickup",v)}/></div></fieldset>}
       {form.kind==="Vagón de mercancías"&&<fieldset className="form-section dynamic-section"><legend>Vagón de mercancías</legend><div className="two-cols"><SelectField label="Categoría" value={form.freightCategory} options={OPTIONS.freightCategory} onChange={(v)=>update("freightCategory",v)}/><Field label="Código o tipo ferroviario" value={form.railwayCode} onChange={(v)=>update("railwayCode",v)}/><Field label="Número de ejes o bogies" value={form.axles} onChange={(v)=>update("axles",v)}/><Field label="Tipo de carga representada" value={form.representedLoad} onChange={(v)=>update("representedLoad",v)}/><Field label="Empresa o decoración comercial" value={form.commercialDecoration} onChange={(v)=>update("commercialDecoration",v)}/></div><div className="check-grid"><Check label="Carga incluida" checked={form.loadIncluded} onChange={(v)=>update("loadIncluded",v)}/><Check label="Carga desmontable" checked={form.removableLoad} onChange={(v)=>update("removableLoad",v)}/><Check label="Garita de freno" checked={form.brakeCabin} onChange={(v)=>update("brakeCabin",v)}/></div></fieldset>}
       <fieldset className="form-section"><legend>Gestión de la colección</legend><div className="two-cols"><Field label="Conjunto o set" value={form.setName} onChange={(v)=>update("setName",v)}/><Field label="Composición habitual" value={form.usualComposition} onChange={(v)=>update("usualComposition",v)}/><Field type="number" label="Cantidad de unidades iguales" value={form.quantity} onChange={(v)=>update("quantity",v)}/><SelectField label="Estado de circulación" value={form.runningState} options={OPTIONS.wagonRunning} onChange={(v)=>update("runningState",v)}/></div><Area label="Modificaciones realizadas" value={form.modifications} onChange={(v)=>update("modifications",v)}/><Area label="Historial de mantenimiento" value={form.maintenanceHistory} onChange={(v)=>update("maintenanceHistory",v)}/><Area label="Notas" value={form.notes} onChange={(v)=>update("notes",v)}/></fieldset>
@@ -300,7 +355,7 @@ function CompositionsTab({compositions,setCompositions,locos,wagons,setToast}:{c
   </section>;
 }
 
-function Field({label,value,onChange,required=false,type="text"}:{label:string;value:string;onChange:(v:string)=>void;required?:boolean;type?:string}) {return <label className="field"><span>{label}</span><input required={required} type={type} value={value} onChange={(e)=>onChange(e.target.value)}/></label>}
+function Field({label,value,onChange,required=false,type="text",disabled=false}:{label:string;value:string;onChange:(v:string)=>void;required?:boolean;type?:string;disabled?:boolean}) {return <label className={`field ${disabled?"disabled":""}`}><span>{label}</span><input required={required} type={type} min={type==="number"?"0":undefined} step={type==="number"?"any":undefined} disabled={disabled} value={value} onChange={(e)=>onChange(e.target.value)}/></label>}
 function Area({label,value,onChange}:{label:string;value:string;onChange:(v:string)=>void}) {return <label className="field"><span>{label}</span><textarea rows={4} value={value} onChange={(e)=>onChange(e.target.value)}/></label>}
 function PhotoPicker({photo,inputRef,onPhoto,onRemove}:{photo:string;inputRef:React.RefObject<HTMLInputElement|null>;onPhoto:(e:ChangeEvent<HTMLInputElement>)=>void;onRemove:()=>void}) {return <div className="photo-row"><button className={`photo-pick ${photo?"has-photo":""}`} type="button" onClick={()=>inputRef.current?.click()}>{photo?<img src={photo} alt="Vista previa"/>:<><Icon name="camera"/><span>Añadir foto</span></>}</button><div><strong>Fotografía principal</strong><p>Haz una foto o selecciónala de tu galería.</p>{photo&&<button className="text-btn" type="button" onClick={onRemove}>Quitar foto</button>}</div><input ref={inputRef} hidden type="file" accept="image/*" capture="environment" onChange={onPhoto}/></div>}
 function Empty({title,text:description,action}:{title:string;text:string;action:()=>void}) {return <div className="empty"><span className="empty-sign"><Icon name="train"/></span><h3>{title}</h3><p>{description}</p><button className="primary" onClick={action}><Icon name="plus"/> Añadir</button></div>}

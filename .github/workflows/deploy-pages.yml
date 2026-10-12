@@ -32,7 +32,7 @@ jobs:
         run: npm ci
 
       - name: Compilar aplicación
-        run: npm run build:github-pages
+        run: npm run test:github-pages
 
       - name: Preparar GitHub Pages
         uses: actions/configure-pages@v5

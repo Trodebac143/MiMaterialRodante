@@ -22,6 +22,14 @@ npm run build:github-pages
 El resultado se escribe en `dist-github-pages/`. La compilación habitual de
 Sites no cambia y continúa ejecutándose con `npm run build`.
 
+La versión visible se mantiene en `app/page.tsx`, `package.json` y
+`public/version.json`. Al abrir o recuperar el foco, la aplicación consulta el
+manifiesto con una URL nueva para detectar publicaciones. Si hay una versión
+posterior, recarga el código conservando `localStorage`; cuando una ficha está
+abierta para edición, muestra el aviso y espera a que se guarde o cierre.
+La publicación de Sites tiene su propio repositorio y despliegue: un push a
+GitHub Pages no actualiza automáticamente la copia de Sites.
+
 ## Arquitectura
 
 El proyecto utiliza [vinext](https://github.com/cloudflare/vinext), con soporte
